@@ -1,0 +1,34 @@
+###
+
+GET http://localhost:3000/posts
+
+
+###
+
+GET http://localhost:3000/posts/6741d5392bd66898164c81a6
+
+
+###
+
+GET http://localhost:3000/posts?sender=Yuval
+
+
+###
+
+POST http://localhost:3000/posts
+Content-Type: application/json
+
+{
+    "title":"therd post",
+    "content": "This is my second post",
+    "sender": "Yuval"
+}
+
+
+###
+PUT http://localhost:3000/posts/6743422e65ed0e0906f1cd29
+Content-Type: application/json
+
+{
+    "title": "Change post"
+}
