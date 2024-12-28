@@ -1,9 +1,14 @@
-const express = require("express");
+import express from "express";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import bodyParser from "body-parser";
+import posts_routes from "./routes/posts_routes";
+
+dotenv.config();
+
 const app = express();
-const dotenv = require("dotenv").config();
 const port = process.env.PORT;
 
-const mongoose = require("mongoose");
 mongoose.connect(process.env.DB_CONNECT);
 
 const db = mongoose.connection;
@@ -12,12 +17,9 @@ db.once("open", function () {
   console.log("connected to the database");
 });
 
-const bodyParser = require("body-parser");
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const posts_routes = require("./routes/posts_routes");
 app.use("/posts", posts_routes);
 
 app.listen(port, () => {

@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import Comment from "../controllers/comments_controllers";
+
 const router = express.Router();
-const Comment = require("../controllers/comments_controllers");
 
 // CRUD operations for comments
 router.post("/", Comment.addNewComment); // Create a new comment
@@ -13,4 +14,4 @@ router.put("/:id", Comment.updateComment); // Update a specific comment
 
 router.delete("/:id", Comment.deleteComment); // Delete a specific comment
 
-module.exports = router;
+export default router;

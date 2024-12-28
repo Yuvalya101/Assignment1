@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import Post from "../controllers/post_controllers";
+
 const router = express.Router();
-const Post = require("../controllers/post_controllers");
 
 router.post("/", Post.addNewPost);
 
@@ -10,4 +11,4 @@ router.get("/:id", Post.getAPostByID);
 
 router.put("/:id", Post.updatePost);
 
-module.exports = router;
+export default router;

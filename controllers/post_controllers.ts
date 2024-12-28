@@ -1,6 +1,6 @@
-const { json } = require("express");
-const { db } = require("../models/post_model");
-const Posts = require("../models/post_model");
+import { json } from "express";
+import { db } from "../models/post_model";
+import Posts from "../models/post_model";
 
 const addNewPost = async (req, res) => {
   console.log(req.body);
@@ -52,7 +52,7 @@ const updatePost = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   addNewPost,
   getAPostByID,
   getAllPosts,

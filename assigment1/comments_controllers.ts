@@ -1,4 +1,4 @@
-const Comments = require("../models/comments_model");
+import Comments from "../models/comments_model";
 
 // Add a new comment
 const addNewComment = async (req, res) => {
@@ -53,7 +53,7 @@ const deleteComment = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   addNewComment,
   getAllComments,
   getCommentsByPostId,
