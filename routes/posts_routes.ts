@@ -5,9 +5,9 @@ const router = express.Router();
 
 router.post("/", Post.addNewPost);
 
-router.get("/", Post.getAllPosts);
-
 router.get("/:id", Post.getAPostByID);
+
+router.get("/", Post.getAllPosts);
 
 router.put("/:id", Post.updatePost);
 
