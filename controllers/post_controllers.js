@@ -52,9 +52,25 @@ const updatePost = async (req, res) => {
   }
 };
 
+
+const deletePost = async (req, res) => {
+  const id = req.params.id;
+  if (id) {
+    try {
+      const post = await Posts.findByIdAndDelete(id);
+      return res.status(200).send(post);
+    } catch (error) {
+      return res.status(400).send(error.message);
+    }
+  } else {
+    console.log("Delete Post Error");
+  }
+};
+
 module.exports = {
   addNewPost,
   getAPostByID,
   getAllPosts,
   updatePost,
+  deletePost,
 };
