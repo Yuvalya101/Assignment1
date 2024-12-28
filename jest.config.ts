@@ -4,5 +4,5 @@ import { InitialOptionsTsJest } from 'ts-jest/dist/types';
 export default {
     preset: "ts-jest",
     testEnvironment: "node",
-    roots: ["<rootDir>/src"],
+    testMatch: ["**/*.spec.ts"],
 };
