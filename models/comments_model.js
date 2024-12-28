@@ -7,12 +7,11 @@ const commentSchema = new Schema({
     ref: "Posts", // Reference the 'Posts' model
     required: true,
   },
-  title: {
+  content: {
     type: String,
     required: true,
   },
-  content: String,
-  sender: {
+  author: {
     type: String,
     required: true,
   },
