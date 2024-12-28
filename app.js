@@ -1,6 +1,6 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
-const dotenv = require("dotenv").config();
 const port = process.env.PORT;
 
 const mongoose = require("mongoose");
@@ -19,6 +19,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const posts_routes = require("./routes/posts_routes");
 app.use("/posts", posts_routes);
+
+const comments_routes = require("./routes/comments_routes");
+app.use("/comments", comments_routes);
 
 app.listen(port, () => {
   console.log("Server started");
