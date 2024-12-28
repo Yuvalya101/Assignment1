@@ -32,3 +32,31 @@ Content-Type: application/json
 {
     "title": "Change post"
 }
+
+
+### Add a new comment
+POST http://localhost:3000/comments
+Content-Type: application/json
+
+{
+  "postId": "63abcd1234abcd1234abcd12",
+  "content": "This is a great post!",
+  "author": "Yuval"
+}
+
+### Get all comments
+GET http://localhost:3000/comments
+
+### Get comments by post ID
+GET http://localhost:3000/comments/63abcd1234abcd1234abcd12
+
+### Update a comment
+PUT http://localhost:3000/comments/63abcd5678abcd5678abcd56
+Content-Type: application/json
+
+{
+  "content": "Updated comment content"
+}
+
+### Delete a comment
+DELETE http://localhost:3000/comments/63abcd5678abcd5678abcd56

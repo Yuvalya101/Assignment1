@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import posts_routes from "./routes/posts_routes";
+import comments_routes from "./routes/comments_routes";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/posts", posts_routes);
+app.use("/comments", comments_routes);
 
 app.listen(port, () => {
   console.log("Server started");
