@@ -4,13 +4,12 @@ import { FilterQuery, Model } from "mongoose";
 class BaseController<T> {
   constructor(private readonly model: Model<T>) {}
   async post(req: Request, res: Response) {
-    console.log(req.body);
     const obj = new this.model(req.body);
     try {
       const savedObj = await obj.save();
       res.status(201).send(savedObj);
     } catch (error: any) {
-      res.status(400).send();
+      res.status(401).send(error.message);
     }
   }
 
@@ -23,9 +22,13 @@ class BaseController<T> {
     }
   }
 
-  async getById(req: Request, res: Response, id: string) {
+  async getById(req: Request, res: Response, _id: string) {
     try {
-      const obj = await this.model.findById(id);
+      const obj = await this.model.findOne({ _id });
+      if (!obj) {
+        res.status(404).send("Not Found");
+        return;
+      }
       res.send(obj);
     } catch (error: any) {
       res.status(400).send(error.message);
