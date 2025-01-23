@@ -39,7 +39,7 @@ POST http://localhost:3000/comments
 Content-Type: application/json
 
 {
-  "postId": "63abcd1234abcd1234abcd12",
+  "postId": "676fec2dbfa4a384a54aac6b",
   "content": "This is a great post!",
   "author": "Yuval"
 }
@@ -60,3 +60,53 @@ Content-Type: application/json
 
 ### Delete a comment
 DELETE http://localhost:3000/comments/63abcd5678abcd5678abcd56
+
+
+###
+
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+    "userName":"Yuval",
+    "email": "Yuval@gmail.com",
+    "password": "123456",
+    "refreshTokens" : ""
+}
+
+
+
+###
+
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "userName": "yuvi",
+    "email": "a@a.com",
+    "password": "qwerty",
+    "refreshTokens" : ""
+}
+
+###
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "userName": "yuvi",
+    "email": "a@a.com",
+    "password": "qwerty",
+    "refreshTokens" : ""
+}
+
+
+###
+POST http://localhost:3000/auth/logout
+Content-Type: application/json
+
+{
+    "userName": "yuvi",
+    "email": "a@a.com",
+    "password": "qwerty",
+    "refreshTokens" : ""
+}

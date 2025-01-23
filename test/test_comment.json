@@ -1,0 +1,17 @@
+[
+    {
+        "comment": "This is a comment",
+        "sender": "Eliav",
+        "postId": "safgsefdgsdfgsd"
+    },
+    {
+        "comment": "This is another comment",
+        "sender": "Eliav",
+        "postId": "safgsefdgsdfgsd"
+    },
+    {
+        "comment": "This is another comment",
+        "sender": "Eliav2",
+        "postId": "safgsefdgsdfgsd"
+    }
+]
