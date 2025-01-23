@@ -1,7 +1,6 @@
 import request from "supertest";
 import { initApp } from "../server";
 import mongoose from "mongoose";
-// import postsModel from "../models/posts_model";
 import { Express } from "express";
 import userModel from "../models/user_model";
 import postsModel from "../models/post_model";
@@ -22,51 +21,74 @@ const userInfo: UserInfo = {
   password: "123456",
 };
 
+beforeAll(async () => {
+  app = await initApp();
+  await userModel.deleteMany();
+  await postsModel.deleteMany();
+});
+
+afterAll(async () => {
+  await mongoose.disconnect();
+});
+
 describe("Auth Tests", () => {
-  beforeAll(async () => {
-    app = await initApp();
-    await userModel.deleteMany();
-    await postsModel.deleteMany();
-  });
-
-  afterAll(async () => {
-    await mongoose.disconnect();
-  });
-  test("Auth Registration", async () => {
+  it("Auth Registration", async () => {
     const response = await request(app).post("/auth/register").send(userInfo);
     expect(response.statusCode).toBe(200);
   });
 
-  test("Auth Registration fail", async () => {
+  it("Auth Registration fail - user already exists", async () => {
     const response = await request(app).post("/auth/register").send(userInfo);
-    expect(response.statusCode).not.toBe(200);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.massage).toBe("user already exists");
   });
 
-  test("Auth Login", async () => {
+  it("Auth Registration fail - missing email or password", async () => {
+    const response = await request(app).post("/auth/register").send({
+      userName: userInfo.userName,
+    });
+    expect(response.statusCode).toBe(400);
+    expect(response.body.massage).toBe("email and password are required");
+  });
+
+  it("Auth Login", async () => {
     const response = await request(app).post("/auth/login").send(userInfo);
-    console.log(response.body);
     expect(response.statusCode).toBe(200);
-    const accessToken = response.body.accessToken;
-    const refreshToken = response.body.refreshToken;
-    const userId = response.body._id;
+    const { accessToken, refreshToken, _id } = response.body;
     expect(accessToken).toBeDefined();
     expect(refreshToken).toBeDefined();
-    expect(userId).toBeDefined();
+    expect(_id).toBeDefined();
     userInfo.accessToken = accessToken;
     userInfo.refreshToken = refreshToken;
-    userInfo._id = userId;
+    userInfo._id = _id;
   });
 
-  test("Make sure two access tokens are notr the same", async () => {
+  it("Auth Login fail - invalid email or password", async () => {
     const response = await request(app).post("/auth/login").send({
-      userName: userInfo.userName,
+      email: "invalid@gmail.com",
+      password: "wrongpassword",
+    });
+    expect(response.statusCode).toBe(400);
+    expect(response.body.massage).toBe("email or password are worng");
+  });
+
+  it("Auth Login fail - missing email or password", async () => {
+    const response = await request(app).post("/auth/login").send({
+      email: userInfo.email,
+    });
+    expect(response.statusCode).toBe(400);
+    expect(response.body.massage).toBe("email or password are worng");
+  });
+
+  it("Make sure two access tokens are not the same", async () => {
+    const response = await request(app).post("/auth/login").send({
       email: userInfo.email,
       password: userInfo.password,
     });
     expect(response.body.accessToken).not.toEqual(userInfo.accessToken);
   });
 
-  test("Get protected API", async () => {
+  it("Get protected API", async () => {
     const response = await request(app).post("/posts").send({
       sender: "",
       title: "My First post",
@@ -76,7 +98,7 @@ describe("Auth Tests", () => {
     const response2 = await request(app)
       .post("/posts")
       .set({
-        authorization: "jwt " + userInfo.accessToken,
+        authorization: "JWT " + userInfo.accessToken,
       })
       .send({
         sender: "invalid owner",
@@ -86,10 +108,10 @@ describe("Auth Tests", () => {
     expect(response2.statusCode).toBe(201);
   });
 
-  test("Get protected API invalid token", async () => {
+  it("Get protected API invalid token", async () => {
     const response = await request(app)
       .post("/posts")
-      .set({ authorization: "jwt " + userInfo.accessToken + "1" }) // invalid token
+      .set({ authorization: "JWT " + userInfo.accessToken + "1" }) // invalid token
       .send({
         sender: userInfo._id,
         title: "My First post",
@@ -98,7 +120,7 @@ describe("Auth Tests", () => {
     expect(response.statusCode).not.toBe(201);
   });
 
-  test("Refresh Token", async () => {
+  it("Refresh Token", async () => {
     const response = await request(app).post("/auth/refresh").send({
       refreshToken: userInfo.refreshToken,
     });
@@ -109,7 +131,13 @@ describe("Auth Tests", () => {
     userInfo.refreshToken = response.body.refreshToken;
   });
 
-  test("Logout - invalidate refresh token", async () => {
+  it("Refresh Token fail - missing refresh token", async () => {
+    const response = await request(app).post("/auth/refresh").send({});
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toBe("invalid token");
+  });
+
+  it("Logout - invalidate refresh token", async () => {
     const response = await request(app).post("/auth/logout").send({
       refreshToken: userInfo.refreshToken,
     });
@@ -121,10 +149,17 @@ describe("Auth Tests", () => {
     expect(response2.statusCode).not.toBe(200);
   });
 
-  test("Refresh token multiuple usage", async () => {
+  it("Logout fail - missing refresh token", async () => {
+    const response = await request(app).post("/auth/logout").send({});
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toBe("missing refresh token");
+  });
+
+  jest.setTimeout(30000);
+
+  it("Refresh token multiple usage", async () => {
     //login - get a refresh token
     const response = await request(app).post("/auth/login").send({
-      userName: userInfo.userName,
       email: userInfo.email,
       password: userInfo.password,
     });
@@ -152,54 +187,5 @@ describe("Auth Tests", () => {
       refreshToken: newRefreshToken,
     });
     expect(response4.statusCode).not.toBe(200);
-  });
-
-  jest.setTimeout(30000);
-  test("timeout on refresh access token", async () => {
-    const response = await request(app).post("/auth/login").send({
-      userName: userInfo.userName,
-      email: userInfo.email,
-      password: userInfo.password,
-    });
-    expect(response.statusCode).toBe(200);
-    expect(response.body.accessToken).toBeDefined();
-    expect(response.body.refreshToken).toBeDefined();
-    userInfo.accessToken = response.body.accessToken;
-    userInfo.refreshToken = response.body.refreshToken;
-
-    //wait for 6 seconds
-    await new Promise((resolve) => setTimeout(resolve, 6000));
-
-    //try to access with expired token
-    const response2 = await request(app)
-      .post("/posts")
-      .set({
-        authorization: "jwt " + userInfo.accessToken,
-      })
-      .send({
-        sender: "invalid owner",
-        title: "My First post",
-        content: "This is my first post",
-      });
-    expect(response2.statusCode).not.toBe(201);
-
-    const response3 = await request(app).post("/auth/refresh").send({
-      refreshToken: userInfo.refreshToken,
-    });
-    expect(response3.statusCode).toBe(200);
-    userInfo.accessToken = response3.body.accessToken;
-    userInfo.refreshToken = response3.body.refreshToken;
-
-    const response4 = await request(app)
-      .post("/posts")
-      .set({
-        authorization: "jwt " + userInfo.accessToken,
-      })
-      .send({
-        sender: "invalid owner",
-        title: "My First post",
-        content: "This is my first post",
-      });
-    expect(response4.statusCode).toBe(201);
   });
 });

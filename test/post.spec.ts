@@ -35,26 +35,25 @@ const testPostFail = {
   content: "This is my first post 2",
 };
 
+beforeAll(async () => {
+  app = await initApp();
+  await userModel.deleteMany();
+  await request(app).post("/auth/register").send(userInfo);
+  const response = await request(app).post("/auth/login").send(userInfo);
+  userInfo.token = response.body.accessToken;
+  userInfo._id = response.body._id;
+});
+
+beforeEach(async () => {
+  await postsModel.deleteMany();
+});
+
+afterAll(async () => {
+  await mongoose.disconnect();
+});
+
 describe("Posts Tests", () => {
-  beforeAll(async () => {
-    app = await initApp();
-    await userModel.deleteMany();
-    await request(app).post("/auth/register").send(userInfo);
-    const response = await request(app).post("/auth/login").send(userInfo);
-    userInfo.token = response.body.accessToken;
-    userInfo._id = response.body._id;
-  });
-
-  beforeEach(async () => {
-    await postsModel.deleteMany();
-  });
-
-  afterAll(async () => {
-    await mongoose.disconnect();
-  });
-
-  test("Posts Create test", async () => {
-    console.log(userInfo);
+  it("Posts Create test", async () => {
     const response = await request(app)
       .post("/posts")
       .set("authorization", "JWT " + userInfo.token)
@@ -65,14 +64,15 @@ describe("Posts Tests", () => {
     expect(post.title).toBe(testPost1.title);
     expect(post.content).toBe(testPost1.content);
   });
-  test("Posts Get All test", async () => {
+
+  it("Posts Get All test", async () => {
     const response = await request(app)
       .get("/posts")
       .set("authorization", "JWT " + userInfo.token);
     expect(response.statusCode).toBe(200);
   });
 
-  test("Posts Get By Id test", async () => {
+  it("Posts Get By Id test", async () => {
     const { body: createdPost } = await request(app)
       .post("/posts")
       .set("authorization", "JWT " + userInfo.token)
@@ -81,13 +81,11 @@ describe("Posts Tests", () => {
       .get("/posts/" + createdPost._id)
       .set("authorization", "JWT " + userInfo.token);
     const post = response.body;
-    console.log("/posts/" + createdPost._id);
-    console.log(post);
     expect(response.statusCode).toBe(200);
     expect(response.body._id).toBe(post._id);
   });
 
-  test("Posts Get By Id test fail", async () => {
+  it("Posts Get By Id test fail", async () => {
     const response = await request(app)
       .get("/posts/" + "8478" + "3")
       .set("authorization", "JWT " + userInfo.token);
@@ -95,19 +93,18 @@ describe("Posts Tests", () => {
     expect(response.statusCode).toBe(400);
   });
 
-  test("Posts Create test", async () => {
+  it("Posts Create test", async () => {
     const response = await request(app)
       .post("/posts")
       .set("authorization", "JWT " + userInfo.token)
       .send(testPost2);
-    console.log(response.body);
     const post = response.body;
     expect(response.statusCode).toBe(201);
     expect(post.title).toBe(testPost2.title);
     expect(post.content).toBe(testPost2.content);
   });
 
-  test("Posts Create test fail", async () => {
+  it("Posts Create test fail", async () => {
     const response = await request(app)
       .post("/posts")
       .set("authorization", "JWT " + userInfo.token)
@@ -115,7 +112,7 @@ describe("Posts Tests", () => {
     expect(response.statusCode).not.toBe(201);
   });
 
-  test("Posts get posts by sender", async () => {
+  it("Posts get posts by sender", async () => {
     await request(app)
       .post("/posts")
       .set("authorization", "JWT " + userInfo.token)
@@ -129,7 +126,7 @@ describe("Posts Tests", () => {
     expect(response.body.length).toBe(1);
   });
 
-  test("Posts Delete test", async () => {
+  it("Posts Delete test", async () => {
     const { body: createdPost } = await request(app)
       .post("/posts")
       .set("authorization", "JWT " + userInfo.token)
@@ -143,7 +140,6 @@ describe("Posts Tests", () => {
     const respponse2 = await request(app)
       .get("/posts/" + createdPost._id)
       .set("authorization", "JWT " + userInfo.token);
-    console.log(createdPost, respponse2.body);
     expect(respponse2.statusCode).toBe(404);
   });
 });

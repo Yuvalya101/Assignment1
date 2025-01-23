@@ -1,86 +1,117 @@
 import request from "supertest";
-import {initApp} from "../server";
+import { initApp } from "../server";
 import mongoose from "mongoose";
 import commentsModel from "../models/comments_model";
+import postsModel from "../models/post_model";
 import { Express } from "express";
-import testComments from "./test_comment.json";
+import { readFile } from "fs/promises";
+import Comment from "../models/comments_model";
 
 var app: Express;
 
-beforeAll(async () => {
-  console.log("beforeAll");
-  app = await initApp();
-  await commentsModel.deleteMany();
-});
+const userInfo = {
+  email: "yuval@gmail.com",
+  password: "123456",
+  userName: "yuvalavi",
+  _id: "",
+  token: "",
+};
 
-afterAll((done) => {
-  console.log("afterAll");
-  mongoose.connection.close();
-  done();
-});
+const testPost1 = {
+  title: "My First post",
+  content: "This is my first post",
+  sender: "yuvalavi",
+};
 
-let commentId = "";
+let testComment = {
+  content: "This is a comment",
+  author: "yuvalavi",
+  postId: "",
+  _id: undefined,
+};
 
 describe("Comments Tests", () => {
+  beforeAll(async () => {
+    app = await initApp();
+    await postsModel.deleteMany();
+    await commentsModel.deleteMany();
+    await request(app).post("/auth/register").send(userInfo);
+    const response = await request(app).post("/auth/login").send(userInfo);
+    userInfo.token = response.body.accessToken;
+    userInfo._id = response.body._id;
+    testComment.postId = (await postsModel.create(testPost1))._id.toString();
+  });
+
+  afterAll((done) => {
+    mongoose.connection.close();
+    done();
+  });
+
   test("Comments test get all", async () => {
-    const response = await request(app).get("/comments");
+    const response = await request(app)
+      .get("/comments")
+      .set("authorization", "JWT " + userInfo.token);
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(0);
   });
 
   test("Test Create Comment", async () => {
-    const response = await request(app).post("/comments").send(testComments[0]);
+    const response = await request(app)
+      .post("/comments")
+      .set("authorization", "JWT " + userInfo.token)
+      .send(testComment);
+    console.log(response);
     expect(response.statusCode).toBe(201);
-    expect(response.body.comment).toBe(testComments[0].comment);
-    expect(response.body.postId).toBe(testComments[0].postId);
-    expect(response.body.sender).toBe(testComments[0].sender);
-    commentId = response.body._id;
+    expect(response.body.content).toBe(testComment.content);
+    expect(response.body.postId).toBe(testComment.postId);
+    expect(response.body.author).toBe(testComment.author);
+    testComment._id = response.body._id;
   });
 
-  test("Test get commenty by sender", async () => {
-    const response = await request(app).get("/comments?sender=" + testComments[0].sender);
+  test("Test get comments ", async () => {
+    const response = await request(app)
+      .get("/comments")
+      .set("authorization", "JWT " + userInfo.token);
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(1);
-    expect(response.body[0].comment).toBe(testComments[0].comment);
-    expect(response.body[0].postId).toBe(testComments[0].postId);
-    expect(response.body[0].sender).toBe(testComments[0].sender);
+    expect(response.body[0].content).toBe(testComment.content);
+    expect(response.body[0].postId).toBe(testComment.postId);
+    expect(response.body[0].author).toBe(testComment.author);
   });
 
-  test("Comments get post by id", async () => {
-    const response = await request(app).get("/comments/" + commentId);
+  test("Comments get comment by post id", async () => {
+    const response = await request(app)
+      .get("/comments/" + testComment.postId)
+      .set("authorization", "JWT " + userInfo.token);
     expect(response.statusCode).toBe(200);
-    expect(response.body.comment).toBe(testComments[0].comment);
-    expect(response.body.postId).toBe(testComments[0].postId);
-    expect(response.body.sender).toBe(testComments[0].sender);
+    expect(response.body[0].content).toBe(testComment.content);
+    expect(response.body[0].postId).toBe(testComment.postId);
+    expect(response.body[0].author).toBe(testComment.author);
   });
 
-  // test("Test Create Post 2", async () => {
-  //   const response = await request(app).post("/posts").send({
-  //     title: "Test Post 2",
-  //     content: "Test Content 2",
-  //     sender: "Testsender2",
-  //   });
-  //   expect(response.statusCode).toBe(201);
-  // });
+  test("Update comment by id", async () => {
+    await request(app)
+      .put("/comments/" + testComment._id)
+      .set("authorization", "JWT " + userInfo.token)
+      .send({ content: "updated comment" });
 
-  // test("Posts test get all 2", async () => {
-  //   const response = await request(app).get("/posts");
-  //   expect(response.statusCode).toBe(200);
-  //   expect(response.body.length).toBe(2);
-  // });
+    const response = await request(app)
+      .get("/comments")
+      .set("authorization", "JWT " + userInfo.token);
+    expect(response.statusCode).toBe(200);
+    expect(response.body[0].content).toBe("updated comment");
+  });
 
-  // test("Test Delete Post", async () => {
-  //   const response = await request(app).delete("/posts/" + postId);
-  //   expect(response.statusCode).toBe(200);
-  //   const response2 = await request(app).get("/posts/" + postId);
-  //   expect(response2.statusCode).toBe(404);
-  // });
+  test("Delete comment by id", async () => {
+    const response = await request(app)
+      .delete("/comments/" + testComment._id)
+      .set("authorization", "JWT " + userInfo.token);
+    expect(response.statusCode).toBe(204);
 
-  // test("Test Create Post fail", async () => {
-  //   const response = await request(app).post("/posts").send({
-  //     title: "Test Post 2",
-  //     content: "Test Content 2",
-  //   });
-  //   expect(response.statusCode).toBe(400);
-  // });
+    const response2 = await request(app)
+      .get("/comments")
+      .set("authorization", "JWT " + userInfo.token);
+    expect(response2.statusCode).toBe(200);
+    expect(response2.body.length).toBe(0);
+  });
 });

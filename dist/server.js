@@ -23,25 +23,23 @@ const users_routes_1 = __importDefault(require("./routes/users_routes"));
 const auth_routes_1 = __importDefault(require("./routes/auth_routes"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
+const options = {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Web Dev 2025 REST API",
+            version: "1.0.0",
+            description: "REST server including authentication using JWT",
+        },
+        servers: [{ url: "http://localhost:3000" }],
+    },
+    apis: ["./routes/*.ts"],
+};
+const specs = (0, swagger_jsdoc_1.default)(options);
 const initApp = () => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const app = (0, express_1.default)();
-    if (process.env.NODE_ENV == "development") {
-        const options = {
-            definition: {
-                openapi: "3.0.0",
-                info: {
-                    title: "Web Dev 2022 REST API",
-                    version: "1.0.0",
-                    description: "REST server including authentication using JWT",
-                },
-                servers: [{ url: "http://localhost:3000", },],
-            },
-            apis: ["./src/routes/*.ts"],
-        };
-        const specs = (0, swagger_jsdoc_1.default)(options);
-        app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(specs));
-    }
+    app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(specs));
     mongoose_1.default.connection.on("error", console.error.bind(console, "connection error:"));
     mongoose_1.default.connection.on("open", function () {
         console.log("connected to the database");

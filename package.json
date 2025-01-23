@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "nodemon app.ts",
     "start": "tsc && node dist/app.js",
-    "test": "jest --detectOpenHandles --forceExit --setupFiles dotenv/config"
+    "test": "jest --detectOpenHandles --forceExit --setupFiles dotenv/config",
+    "test1": "tsc && jest --detectOpenHandles --forceExit --coverage --runInBand",
+    "test2": "jest --detectOpenHandles --forceExit post.test.ts"
+
   },
   "author": "",
   "license": "ISC",

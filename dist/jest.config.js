@@ -4,5 +4,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = {
     preset: "ts-jest",
     testEnvironment: "node",
-    testMatch: ["**/*.spec.ts"],
 };

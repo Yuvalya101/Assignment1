@@ -3,11 +3,13 @@
         "target": "es6",
         "module": "commonjs",
         "strict": true,
+        "resolveJsonModule": true,
         "esModuleInterop": true,
         "moduleResolution": "node",
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "outDir": "./dist",
+    
     
     },
     "lib": ["es2023"],
